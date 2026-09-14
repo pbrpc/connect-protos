@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package diagnostics;
+
+option go_package = "git.sonicoriginal.software/grpc-protos/diagnostics";
+
+// Diagnostics service provides service dependency and connection status information
+service DiagnosticsService {
+  // Get diagnostic information about service dependencies
+  rpc GetDiagnostics(GetDiagnosticsRequest) returns (GetDiagnosticsResponse);
+}
+
+// Request for diagnostic information
+message GetDiagnosticsRequest {}
+
+// Response containing diagnostic information
+message GetDiagnosticsResponse {
+  // Map of service name to dependency status
+  map<string, ServiceDependency> services = 1;
+}
+
+// ServiceDependency represents the status of a dependency on another service
+message ServiceDependency {
+  // Address of the service (if known)
+  string address = 1;
+
+  // Connection state
+  string state = 2;
+
+  // Serving status
+  string serving = 3;
+
+  // Last time this dependency was checked (UNIX timestamp)
+  int64 last_checked = 4;
+
+  // Additional diagnostic details (flexible key-value pairs)
+  map<string, string> details = 5;
+}

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package info;
+
+option go_package = "git.sonicoriginal.software/grpc-protos/info";
+
+// Info service provides service information
+service InfoService {
+  // Get service version
+  rpc Version(VersionRequest) returns (VersionResponse);
+}
+
+// Request for service information
+message VersionRequest {}
+
+// Response containing service information
+message VersionResponse {
+  // Service version
+  string version = 1;
+}

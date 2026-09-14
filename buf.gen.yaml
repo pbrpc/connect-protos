@@ -1,0 +1,29 @@
+version: v2
+
+managed:
+  enabled: true
+  override:
+    - file_option: go_package
+      module: buf.build/grpc/grpc
+      path: grpc/health/v1/health.proto
+      value: git.sonicoriginal.software/grpc-protos/health
+
+inputs:
+  - directory: .
+  - module: buf.build/grpc/grpc
+    paths:
+      - grpc/health/v1/health.proto
+
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: go
+    include_imports: true
+    opt:
+      - module=git.sonicoriginal.software/grpc-connect-protos
+
+  # - remote: buf.build/connectrpc/go:v2.0.0
+  - local: protoc-gen-connect-go
+    out: go
+    include_imports: true
+    opt:
+      - module=git.sonicoriginal.software/grpc-connect-protos
