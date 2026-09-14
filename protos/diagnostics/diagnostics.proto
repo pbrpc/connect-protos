@@ -2,37 +2,40 @@ syntax = "proto3";
 
 package diagnostics;
 
-option go_package = "git.sonicoriginal.software/grpc-protos/diagnostics";
+option go_package = "github.com/pbrpc/connect-protos/diagnostics";
 
-// Diagnostics service provides service dependency and connection status information
+// DiagnosticsService reports on the dependencies a service holds.
 service DiagnosticsService {
-  // Get diagnostic information about service dependencies
+  // GetDiagnostics checks every dependency and reports each one.
   rpc GetDiagnostics(GetDiagnosticsRequest) returns (GetDiagnosticsResponse);
 }
 
-// Request for diagnostic information
+// GetDiagnosticsRequest asks for every dependency.
 message GetDiagnosticsRequest {}
 
-// Response containing diagnostic information
+// GetDiagnosticsResponse carries one report per dependency.
 message GetDiagnosticsResponse {
-  // Map of service name to dependency status
+  // Each dependency's report, keyed by the name the service gives it.
   map<string, ServiceDependency> services = 1;
 }
 
-// ServiceDependency represents the status of a dependency on another service
+// ServiceDependency is one dependency as it was when last checked.
 message ServiceDependency {
-  // Address of the service (if known)
+  // Address the dependency was reached at, when known.
   string address = 1;
 
-  // Connection state
+  // Whether the dependency could be reached: REACHABLE when the health call
+  // was answered, UNREACHABLE when it was not.
   string state = 2;
 
-  // Serving status
+  // The dependency's own answer to its health check, a
+  // grpc.health.v1.HealthCheckResponse.ServingStatus name; UNKNOWN when it
+  // could not be asked.
   string serving = 3;
 
-  // Last time this dependency was checked (UNIX timestamp)
+  // When this dependency was last checked, as a UNIX timestamp in seconds.
   int64 last_checked = 4;
 
-  // Additional diagnostic details (flexible key-value pairs)
+  // Further details the check chose to report, as key-value pairs.
   map<string, string> details = 5;
 }

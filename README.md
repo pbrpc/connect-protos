@@ -1,63 +1,75 @@
-# grpc-protos-connect
+# connect-protos
 
-Protobuf interface definitions for common `connect` service capabilities.
-Provides standard service contracts that microservices can implement for
-observability and service discovery.
+Protobuf contracts for the capabilities every Connect service exposes, with
+connect-go v2 clients and handlers generated for each: the standard
+`grpc.health.v1` health service, and the `info` and `diagnostics` services
+shared across the ecosystem.
 
 ## Overview
 
-This library contains protobuf definitions for cross-cutting service concerns.
-Services implementing these interfaces provide consistent APIs for querying
-service information and diagnostic state across a microservices ecosystem.
+A service implements these interfaces so that probes, operators, and other
+services can ask it the same questions the same way: whether it is serving,
+which version it runs, and how its dependencies are doing. The generated
+handlers register on a `*connect.Server` and answer gRPC, gRPC-Web, and
+Connect-protocol clients alike. Nothing here imports `google.golang.org/grpc`.
 
 ## Installation
 
 ```bash
-go get git.sonicoriginal.software/grpc-protos/info@latest
-go get git.sonicoriginal.software/grpc-protos/diagnostics@latest
+go get github.com/pbrpc/connect-protos@latest
 ```
+
+## Packages
+
+| Package                          | Contents                                                                                     |
+| -------------------------------- | -------------------------------------------------------------------------------------------- |
+| `health`                         | `grpc.health.v1` messages, generated from the canonical `grpc/health/v1/health.proto`        |
+| `health/healthconnect`           | `HealthClient`, `HealthHandler`, `RegisterHealthHandler`                                     |
+| `info`                           | `InfoService` messages                                                                       |
+| `info/infoconnect`               | `InfoServiceClient`, `InfoServiceHandler`, `RegisterInfoServiceHandler`                      |
+| `diagnostics`                    | `DiagnosticsService` messages                                                                |
+| `diagnostics/diagnosticsconnect` | `DiagnosticsServiceClient`, `DiagnosticsServiceHandler`, `RegisterDiagnosticsServiceHandler` |
 
 ## Services
 
+### grpc.health.v1.Health
+
+The GRPC Health Checking Protocol: `Check` for one service's status, `Watch` for
+a stream of its changes, `List` for every recorded service. The `""` service
+names the process. This is the interface Kubernetes gRPC probes,
+`grpc_health_probe`, and proxies' health checkers speak.
+
+The proto is not copied here. `buf.yaml` depends on the `buf.build/grpc/grpc`
+module, and `buf.gen.yaml` names its `grpc/health/v1/health.proto` as an input
+with the Go package rewritten to this module, so the descriptor is the canonical
+one. A binary that also links `google.golang.org/grpc/health/grpc_health_v1`
+registers the same descriptors twice and panics at init; a Connect binary
+imports this package and a grpc-go binary imports that one.
+
 ### InfoService
 
-Provides service version and metadata information. Services implementing this
-interface expose their version number and additional key-value details about
-their configuration or runtime state.
-
-Useful for service inventories, version tracking, and debugging deployment
-issues.
+`Version` reports the running server's version.
 
 ### DiagnosticsService
 
-Exposes diagnostic information about a service's dependencies. Services
-implementing this interface report the connection state, serving status, and
-health of external services they depend on.
-
-Includes connection addresses, last check timestamps, and flexible key-value
-diagnostic details. Enables debugging connectivity issues and understanding
-service dependency health.
+`GetDiagnostics` reports each dependency the service holds, keyed by the name
+the service gives it: the address it was reached at, its serving status, its
+reachability, when it was last checked, and any further details.
 
 ## Generated Code
 
-This repository uses automated proto generation. The default branch contains
-protobuf source files, while the `gen` branch contains generated Go code.
-Releases are tagged with timestamp-based versions.
+The default branch holds the protobuf sources. The `gen` branch holds the Go
+code that `buf generate` produces from them, and Go modules resolve to it when
+importing this module. Releases are tagged from it.
 
-Go modules automatically resolve to the `gen` branch when importing packages.
+`protoc-gen-connect-go` runs as a local plugin, so generating requires the
+connect-go v2 generator on the path:
+
+```bash
+go install connectrpc.com/connect/v2/cmd/protoc-gen-connect-go@latest
+```
 
 ## Usage
 
-Import the generated protobuf packages into your service and implement the
-service interfaces. Register the implementations with your gRPC server to expose
-these capabilities.
-
-## Requirements
-
-- Go 1.21 or later
-- gRPC Go libraries
-- Protocol Buffers runtime
-
-## License
-
-Apache License 2.0
+Register the generated handlers on a `*connect.Server` alongside your own, then
+mount the server with `connecthttp.Mount`.

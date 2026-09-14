@@ -6,7 +6,7 @@ managed:
     - file_option: go_package
       module: buf.build/grpc/grpc
       path: grpc/health/v1/health.proto
-      value: git.sonicoriginal.software/grpc-protos/health
+      value: github.com/pbrpc/connect-protos/health
 
 inputs:
   - directory: .
@@ -17,13 +17,11 @@ inputs:
 plugins:
   - remote: buf.build/protocolbuffers/go
     out: go
-    include_imports: true
     opt:
-      - module=git.sonicoriginal.software/grpc-connect-protos
+      - module=github.com/pbrpc/connect-protos
 
   # - remote: buf.build/connectrpc/go:v2.0.0
   - local: protoc-gen-connect-go
     out: go
-    include_imports: true
     opt:
-      - module=git.sonicoriginal.software/grpc-connect-protos
+      - module=github.com/pbrpc/connect-protos
