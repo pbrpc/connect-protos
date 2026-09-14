@@ -3,9 +3,6 @@ version: v2
 modules:
   - path: protos
 
-deps:
-  - buf.build/grpc/grpc
-
 lint:
   use:
     - STANDARD
