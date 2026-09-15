@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2026-09-15
+#### Features
+- add admission messages - (15e1424) - Nathan Blair
+
+- - -
+
 ## 0.1.1 - 2026-09-14
 #### Bug Fixes
 - don't re-export the health proto - (d2393b2) - Nathan Blair
