@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.1 - 2026-09-15
+#### Bug Fixes
+- admission doesn't belong here - (f5bf81c) - Nathan Blair
+
+- - -
+
 ## 0.2.0 - 2026-09-15
 #### Features
 - add admission messages - (15e1424) - Nathan Blair
