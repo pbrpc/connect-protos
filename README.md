@@ -2,8 +2,7 @@
 
 Protobuf contracts for the capabilities every Connect service exposes, with
 connect-go v2 clients and handlers generated for each: the `info` and
-`diagnostics` services shared across the ecosystem, and the `admission`
-messages a gateway consults services with.
+`diagnostics` services shared across the ecosystem.
 
 ## Overview
 
@@ -27,7 +26,6 @@ go get github.com/pbrpc/connect-protos@latest
 | `info/infoconnect`               | `InfoServiceClient`, `InfoServiceHandler`, `RegisterInfoServiceHandler`                      |
 | `diagnostics`                    | `DiagnosticsService` messages                                                                |
 | `diagnostics/diagnosticsconnect` | `DiagnosticsServiceClient`, `DiagnosticsServiceHandler`, `RegisterDiagnosticsServiceHandler` |
-| `admission`                      | `AdmissionRequest`, `AdmissionResponse` messages                                             |
 
 ## Services
 
@@ -40,28 +38,6 @@ go get github.com/pbrpc/connect-protos@latest
 `GetDiagnostics` reports each dependency the service holds, keyed by the name
 the service gives it: the address it was reached at, its serving status, its
 reachability, when it was last checked, and any further details.
-
-## Admission
-
-A gateway consults admission services before forwarding a request. The
-contract is the two messages, with no shared service: each admission service
-declares its own unary RPC taking `AdmissionRequest` and returning
-`AdmissionResponse`, and the gateway is configured with that RPC's procedure
-name. Method discovery keys on the procedure, so two admission services never
-share one.
-
-`AdmissionRequest` carries the target procedure, every header as received, and
-the peer (remote address and, over TLS, the client certificate). The body is
-never sent. `AdmissionResponse` names headers to remove and headers to set on
-the forwarded request, `remove` applied before `set`, and may name a
-different procedure to forward to. A refusal is the error the RPC returns,
-which the gateway answers to the client without forwarding.
-
-```proto
-service Authenticator {
-  rpc Authenticate(admission.AdmissionRequest) returns (admission.AdmissionResponse);
-}
-```
 
 ## Generated Code
 
