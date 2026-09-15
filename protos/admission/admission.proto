@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package admission;
+
+option go_package = "github.com/pbrpc/connect-protos/admission";
+
+// Admission is the contract between a gateway and the services it consults
+// before forwarding a request. There is no shared service: each admission
+// service declares its own unary RPC taking AdmissionRequest and returning
+// AdmissionResponse, and the gateway is configured with that RPC's
+// procedure name. A request the service refuses is the error its RPC
+// returns, which the gateway answers to the client without forwarding.
+//
+// The gateway sends what it holds before reading the body: the target
+// procedure, the headers, and the peer. Nothing about the body is sent, and
+// nothing about the body can be changed.
+
+// AdmissionRequest is one request as the gateway received it.
+message AdmissionRequest {
+  // The request path, /package.Service/Method.
+  string procedure = 1;
+
+  // Every header as received, keyed by canonical name, after the mutations
+  // of any admission service consulted before this one.
+  map<string, Values> headers = 2;
+
+  // The connection the request arrived on.
+  Peer peer = 3;
+}
+
+// Values is one header's values, in order.
+message Values {
+  repeated string values = 1;
+}
+
+// Peer describes the connection a request arrived on.
+message Peer {
+  // The remote address, host:port.
+  string address = 1;
+
+  // The leaf certificate the client presented, DER-encoded, when the
+  // connection was TLS and the client presented one. Empty otherwise.
+  bytes certificate = 2;
+}
+
+// AdmissionResponse is what the gateway changes on the forwarded request.
+// remove is applied before set.
+message AdmissionResponse {
+  // Headers deleted from the forwarded request, by name.
+  repeated string remove = 1;
+
+  // Headers set on the forwarded request, each replacing every existing
+  // value of that name.
+  repeated Header set = 2;
+
+  // The procedure the request is forwarded to in place of the one it named,
+  // /package.Service/Method. Empty leaves the target as it is. The gateway
+  // resolves the target after the last admission service has answered, so a
+  // later service sees this as the request's procedure.
+  string procedure = 3;
+}
+
+// Header is one header to set.
+message Header {
+  string name = 1;
+  repeated string values = 2;
+}
